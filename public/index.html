@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Signature App</title>
+    <style>
+        #pdf-viewer {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ccc;
+        }
+        .signature-options {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>PDF Signature App</h1>
+    <div>
+        <label for="pdfFile">Chọn PDF:</label>
+        <input type="file" id="pdfFile" accept=".pdf" />
+        <button id="loadPdf">Hiển thị PDF</button>
+    </div>
+    <div id="pdf-viewer"></div>
+    <div class="signature-options">
+        <label for="signatureImage">Chọn hình ảnh chữ ký:</label>
+        <input type="file" id="signatureImage" accept="image/*" /><br><br>
+        <label for="xPosition">Vị trí X (px):</label>
+        <input type="number" id="xPosition" value="50" /><br><br>
+        <label for="yPosition">Vị trí Y (px):</label>
+        <input type="number" id="yPosition" value="50" /><br><br>
+        <label for="width">Chiều rộng (px):</label>
+        <input type="number" id="width" value="150" /><br><br>
+        <label for="height">Chiều cao (px):</label>
+        <input type="number" id="height" value="100" /><br><br>
+    </div>
+    <button id="signPdf">Ký số PDF</button>
+    <div id="downloadLink"></div>
+
+    <script>
+        document.getElementById('signPdf').addEventListener('click', async () => {
+            const pdfFile = document.getElementById('pdfFile').files[0];
+            const signatureImage = document.getElementById('signatureImage').files[0];
+            const xPosition = document.getElementById('xPosition').value;
+            const yPosition = document.getElementById('yPosition').value;
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+
+            const formData = new FormData();
+            formData.append('pdfFile', pdfFile);
+            formData.append('signatureImage', signatureImage);
+            formData.append('xPosition', xPosition);
+            formData.append('yPosition', yPosition);
+            formData.append('width', width);
+            formData.append('height', height);
+
+            const response = await fetch('/sign-pdf', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'signed_output.pdf';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } else {
+                alert('Đã xảy ra lỗi khi ký số PDF');
+            }
+        });
+    </script>
+</body>
+</html>
